@@ -4,6 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon -L",
     "test": "./node_modules/.bin/jest --runInBand"
   },
   "repository": {
@@ -22,7 +24,6 @@
     "sequelize": "^6.13.0"
   },
   "devDependencies": {
-    "jest": "^27.4.7",
-    "nodemon": "^2.0.15"
+    "jest": "^27.4.7"
   }
 }
