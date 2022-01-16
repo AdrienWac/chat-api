@@ -12,5 +12,5 @@ app.get('/', async (req, res) => {
     res.json({ message: 'Hello world' });
 });
 
-app.listen(PORT);
+app.listen(3000);
 
