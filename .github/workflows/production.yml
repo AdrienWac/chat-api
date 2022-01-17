@@ -1,53 +1,33 @@
 # This is a basic workflow to help you get started with Actions
 
-name: development-heroku-container-registry
+name: production-heroku-container-registry
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ development ]
+    branches: [ main ]
   pull_request:
-    branches: [ development ]
+    branches: [ main ]
 
 env:
   HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-  APP_NAME: ${{ 'a1234545648452121542122145' }}
+  APP_NAME: ${{ 'sheltered-inlet-55561' }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-
-  test:
-    name: run_test
-    
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run test
-        run: npm run test
-
-  # This workflow contains a single job called "deploy"
+  # This workflow contains a single job called "build"
   deploy:
-    name: Deploy to development Heroku app 
+    name: Deploy to production Heroku app 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    needs: [run_test]
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
         uses: actions/checkout@v2
-    
+
       # Runs a single command using the runners shell
       - name: Docker build
         run: docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
