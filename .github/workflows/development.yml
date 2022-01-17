@@ -12,7 +12,7 @@ on:
 
 env:
   HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-  APP_NAME: ${{ 'sheltered-inlet-55561' }}
+  APP_NAME: ${{ 'a1234545648452121542122145' }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
