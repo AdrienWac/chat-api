@@ -13,6 +13,10 @@ app.get('/', async (req, res) => {
     res.json({ message: `Hello world!!!` });
 });
 
+// app.post('/user', (req, res) => {
+//     res.json({message: 'test'});
+// });
+
 app.use('/user', require('./routes/user'));
 
 app.listen(process.env.PORT || 3000);

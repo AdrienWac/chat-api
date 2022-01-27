@@ -1,5 +1,9 @@
-exports.sanitizeClientContent = (arrayFieldToSanitize) => {
+exports.sanitizeClientContent = (arrayOfRequestFieldToSanitize) => {
+
     return (req, res, next) => {
-        // Parcours les champs de la requête à sanitizer
-    };
+
+        next();
+
+    }
+
 }

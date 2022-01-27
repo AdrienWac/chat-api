@@ -4,14 +4,15 @@ const SanitizeMiddleware = require('../middlewares/sanitize');
 const RegistrationMiddleware = require('../middlewares/registration');
 const UserController = require('../controllers/users.controller');
 
-router.post('/', (req, res, next) => {
+router.post(
+    '/',
     [
         SanitizeMiddleware.sanitizeClientContent(['username']),
         RegistrationMiddleware.signupRequestSchema,
         RegistrationMiddleware.isUniqueUser,
-        UserController.insert,
+        UserController.add,
     ]
-    next();
-});
+);
+
 
 module.exports = router;

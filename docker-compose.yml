@@ -36,6 +36,7 @@ services:
     env_file: ./.env
     ports:
       - $API_HOST_PORT:$API_CONTAINER_PORT
+      - $API_DEBUGGING_HOST_PORT:$API_DEBUGGING_CONTAINER_PORT
     environment:
       MYSQL_HOST: $MYSQL_HOST
       MYSQL_USER: $MYSQL_USER
