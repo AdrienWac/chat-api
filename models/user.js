@@ -17,16 +17,7 @@ module.exports = (sequelize, DataTypes) => {
 
     User.init({
         sessionId: { type: DataTypes.STRING, allowNull: true },
-        email: { type: DataTypes.STRING, allowNull: false },
-        password: {
-            type: DataTypes.STRING, allowNull: false, set(value) {
-                this.setDataValue('password', hashPassword(value));
-            }
-        },
         username: { type: DataTypes.STRING, allowNull: false },
-        lastname: { type: DataTypes.STRING, allowNull: false },
-        firstname: { type: DataTypes.STRING, allowNull: false },
-        is_active: { type: DataTypes.BOOLEAN, allowNull: false },
     }, {
         sequelize,
         modelName: 'User',
