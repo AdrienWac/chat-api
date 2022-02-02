@@ -3,15 +3,14 @@
 const express = require('express');
 const db = require('./models');
 const cors =  require('cors');
-
-require('dotenv').config({ path: '.env' });
+const config = require('./config');
 
 db.sequelize.sync({force: false});
 
 const app = express();
 
 var corsOptions = {
-    origin: process.env.CLIENT_URL
+    origin: config.CLIENT_URL
 };
 
 app.use(cors(corsOptions));
