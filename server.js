@@ -10,5 +10,40 @@ const io = new Server(httpServer, {
         origin: config.CLIENT_URL
     }
 });
-console.log('config', config.PORT);
+
+io.use((socket, next) => {
+
+    const { username } = socket.handshake.auth;
+
+    if (!username) {
+        return new(new Error('Invalid username'));
+    }
+
+    socket.username = username;
+
+    next();
+    
+});
+
+io.on('connection', (socket) => {
+    // Génère la liste des utilisateurs
+    const users = [];
+
+    for (let [id, socket] of io.of('/').sockets) {
+        users.push({
+            userId: id,
+            username: socket.username
+        });
+    }
+
+    socket.emit('users', users);
+
+    // Emet un évènement de connexion aux autres connectés avec les informations de l'utilisateur
+    socket.broadcast.emit('user connected', {
+        userId: socket.id,
+        username: socket.username
+    });
+
+});
+
 httpServer.listen(config.PORT);
