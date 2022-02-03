@@ -32,7 +32,8 @@ io.on('connection', (socket) => {
     for (let [id, socket] of io.of('/').sockets) {
         users.push({
             userId: id,
-            username: socket.username
+            username: socket.username,
+            messages: []
         });
     }
 
@@ -41,7 +42,18 @@ io.on('connection', (socket) => {
     // Emet un évènement de connexion aux autres connectés avec les informations de l'utilisateur
     socket.broadcast.emit('user connected', {
         userId: socket.id,
-        username: socket.username
+        username: socket.username,
+        messages: []
+    });
+
+    // Reception d'un événement message privé
+    socket.on('private message', ({content, to}) => {
+        // On créé un channel privé(to()) et on émet un évènement private message
+        socket.to(to).emit('private message', {
+            content,
+            from: socket.id,
+            to: to
+        });
     });
 
 });
