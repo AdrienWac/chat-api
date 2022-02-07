@@ -23,4 +23,4 @@ app.get('/', async (req, res) => {
 
 app.use('/user', require('./routes/user'));
 
-app.listen(process.env.PORT || 3000);
+module.exports = app;
