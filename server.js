@@ -10,6 +10,10 @@ const io = new Server(httpServer, {
         origin: config.CLIENT_URL
     }
 });
+console.log('io', io);
+console.log('config.CLIENT_URL', config.CLIENT_URL);
+
+
 
 io.use((socket, next) => {
 
