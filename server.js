@@ -6,14 +6,12 @@ const config = require('./config');
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
-    rejectUnauthorized: false,
     cors: {
         origin: config.CLIENT_URL
     }
 });
 
 io.use((socket, next) => {
-    console.log('Middleware Socker');
     const { username } = socket.handshake.auth;
 
     if (!username) {
@@ -27,7 +25,6 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('CONNECTION');
     // Génère la liste des utilisateurs
     const users = [];
 
@@ -65,9 +62,4 @@ io.on('connection', (socket) => {
 
 });
 
-httpServer.listen(config.PORT, (error) => {
-    if (error) {
-        console.log('ERROR LISTEN', error);
-    }
-    console.log(`Server started on port ${config.PORT}`);
-});
+httpServer.listen(config.PORT);
