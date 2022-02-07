@@ -56,6 +56,11 @@ io.on('connection', (socket) => {
         });
     });
 
+    // J'emet un event lorsque je me déconnecte
+    socket.on('disconnect', () => {
+        socket.broadcast.emit('user disconected', socket.id);
+    });
+
 });
 
 httpServer.listen(config.PORT);
