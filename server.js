@@ -2,6 +2,7 @@ const app = require('./app');
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const config = require('./config');
+const SocketMiddleware = require('./middlewares/socket');
 
 const httpServer = createServer(app);
 
@@ -11,18 +12,7 @@ const io = new Server(httpServer, {
     }
 });
 
-io.use((socket, next) => {
-    const { username } = socket.handshake.auth;
-
-    if (!username) {
-        return new(new Error('Invalid username'));
-    }
-
-    socket.username = username;
-
-    next();
-    
-});
+io.use(SocketMiddleware.handleSession);
 
 io.on('connection', (socket) => {
     // Génère la liste des utilisateurs
