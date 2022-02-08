@@ -14,10 +14,27 @@ services:
       MYSQL_DATABASE: chat
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
+
+  mysql-test: 
+    image: mysql:5.7
+    volumes:
+      - mysql-test-datas:/var/lib/mysql
+    env_file: ./.env
+    ports:
+      - $MYSQL_TEST_HOST_PORT:$MYSQL_CONTAINER_PORT
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: test_chat
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+
+      
+    
   
   adminer:
     depends_on:
       - mysql
+      - mysql-test
     image: adminer
     restart: always
     env_file: ./.env

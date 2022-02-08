@@ -1,9 +1,11 @@
+const config = require('./index');
+
 module.exports = {
-    HOST: process.env.MYSQL_HOST,
-    USER: process.env.MYSQL_USER,
-    PASSWORD: process.env.MYSQL_PASSWORD,
-    DB: process.env.MYSQL_DATABASE,
-    port: process.env.MYSQL_PORT,
+    HOST: config.DB_HOST,
+    USER: config.DB_USER,
+    PASSWORD: config.DB_PASSWORD,
+    DB: config.DB_NAME,
+    port: config.DB_PORT,
     dialect: "mysql",
     pool: {
         max: 5,
