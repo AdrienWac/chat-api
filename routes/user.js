@@ -9,7 +9,6 @@ router.post(
     [
         SanitizeMiddleware.sanitizeClientContent(['username']),
         RegistrationMiddleware.signupRequestSchema,
-        RegistrationMiddleware.isUniqueUser,
         UserController.add,
     ]
 );
