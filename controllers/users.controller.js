@@ -9,8 +9,8 @@ exports.add = async (req, res) => {
         return res.status(201).send({ code: 201, message: `Account created successfully`, result: user.dataValues });
 
     } catch (error) {
-
-        return res.status(500).send({ code: 500, message: `Error during user creation. ${error.message}`, result: {} });
+        const codeStatus = error.name === 'SequelizeUniqueConstraintError' ? 403 : 500;
+        return res.status(codeStatus).send({ code: codeStatus, message: `Error during user creation. ${error.message}`, result: {} });
 
     }
 

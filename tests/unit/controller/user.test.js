@@ -19,7 +19,7 @@ const mockResponse = () => {
 let nextFunction = jest.fn(); 
 
 
-describe('Add user', () => {
+describe('Simple add user', () => {
 
     beforeAll(async () => {
         // On initialise la bdd
@@ -54,7 +54,21 @@ describe('Add user', () => {
         
     });
 
-    it ('Should return the user data', async () => {
+});
+
+describe('Test add user with same username', () => {
+
+    beforeAll(async () => {
+        // On initialise la bdd
+        await db.sequelize.sync({ match: /^test_/, force: true });
+    });
+
+    afterAll(async () => {
+        // On vide la base de donnée
+        await db.sequelize.truncate();
+    });
+
+    it('Should return the user data', async () => {
 
         let user = provider.user.createSampleUser();
 
@@ -76,6 +90,21 @@ describe('Add user', () => {
                 result: expect.any(Object)
             })
         );
+
+    });
+
+    it('Should detect the username is not unique', async () => {
+
+        let user = provider.user.createSampleUser();
+
+        const req = mockRequest(user);
+        const res = mockResponse();
+
+        await UserController.add(req, res, nextFunction);
+
+        const firstArgSendFunctionCall = res.send.mock.calls[0][0];
+
+        expect(firstArgSendFunctionCall.code).toEqual(403);
 
     });
 
