@@ -1,19 +1,35 @@
-exports.handleSession = (socket, next) => {
+const db = require('../models');
 
-    const { username } = socket.handshake.auth;
+exports.handleSession = async (socket, next) => {
 
-    if (!username) {
-        return next(new Error('Invalid username'));
-    }
+    // soocket.test = 'ouiopiuo';
+    // return next(new Error("invalid username"));
 
-    socket.username = username;
+    // const { username } = socket.handshake.auth;
 
-    next();
+    // if (!username) {
+    //     return next(new Error('Invalid username'));
+    // }
+
+    // socket.username = username;
+
+    // next();
     
-    // If founded session
-        // Set socket property with datas of session founded
-            // socket.sessionId//socket.userId//socket.username = ...
-        // return next();
+    // const sessionId = socket.handshake.auth.sessionId;
+
+    // if (sessionId) {
+
+    //     const session = await db.User.findOne({ where: { sessionId: sessionId } });
+        
+    //     if (session !== null) {
+    //         // Set socket property with datas of session founded
+    //         ({ sessionId: socket.sessionId, id: socket.userId, username: socket.username } = session);
+    //         return next();
+    //     }
+
+    // }
+    
+        
 
     // If is not unique Username
         // return next(new Error)
