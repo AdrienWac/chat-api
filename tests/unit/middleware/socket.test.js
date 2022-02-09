@@ -1,60 +1,59 @@
-const db = require('../../../models');
+
 const SocketMiddleware = require('../../../middlewares/socket');
 
+jest.mock('../../../models');
 
-// const db = jest.mock();
+const db = require('../../../models');
+
+let mockSocketFactory = (authObject) => {
+    return {
+        handshake: {
+            auth: authObject
+        }
+    };
+};
+
 
 describe('Handle session', () => {
-    let mockSocket;
+
     let nextFunction;
+    
     beforeAll(() => {
 
         // await db.sequelize.sync({ force: true })
         nextFunction = jest.fn();
 
-        mockSocket = {
-            handshake: {
-                auth: {
-                    username: 'Jdoe'
-                }
-            }
-        };
-
     })
 
 
-    it('Should find session', async () => {
-
-        const mockValue = {
-            id: 1,
-            sessionId: '123456',
-            username: 'Jdoe'
-        };
-        // On mock un obj socket avec une session
-        let test = JSON.parse(JSON.stringify(mockSocket));
-        test.handshake.auth.sessionId = mockValue.sessionId;
-        // On mock le modèle user avec une méthode find qui retourne un user 
-        jest.mock('../../../models', () => {
-            return {
-                User: {
-                    findOne: jest.fn().mockReturnValueOnce({ sessionId: mockValue.sessionId, username: mockValue.username})
-                }
-            }
+    it('Should call next method', async () => {
+        
+        db.User.findOne.mockImplementation(() => {
+            return { id: 1, sessionId: '123456', username: 'Jdoe' }
         });
-        // On appel la méthode du middleware
-        SocketMiddleware.handleSession(test, nextFunction);
-        // On vérifie que la fonction next est appelé sans paramètre
+
+        let mockSocket = mockSocketFactory({username: 'Jdoe', sessionId: '123456'});
+
+        await SocketMiddleware.handleSession(mockSocket, nextFunction);
+
         expect(nextFunction).toHaveBeenCalled();
     });
 
-    // it('Should create new session', () => {
+    it('Should return an error', () => {
 
-    // });
 
-    // it('Should return an error', () => {
-    //     SocketMiddleware.handleSession(mockSocket, nextFunction);
-    //     console.log('nextFunction.mock.calls[0][0]', nextFunction.mock.calls[0][0].constructor === Error);
-    // });
+        
+        // db.User.findOne.mockImplementation(() => {
+        //     return null;
+        // });
+
+        // let mockSocket = mockSocketFactory({ username: 'Jdoe', sessionId: '123456' });
+
+        // SocketMiddleware.handleSession(mockSocket, nextFunction);
+
+        // console.log('nextFunction.mock.calls[0][0]', nextFunction.mock.calls[0][0].constructor === Error);
+
+    });
 
 
 })

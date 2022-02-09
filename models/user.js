@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
 
     User.init({
         sessionId: { type: DataTypes.STRING, allowNull: true },
-        username: { type: DataTypes.STRING, allowNull: false },
+        username: { type: DataTypes.STRING, allowNull: false, unique: true },
     }, {
         sequelize,
         modelName: 'User',
