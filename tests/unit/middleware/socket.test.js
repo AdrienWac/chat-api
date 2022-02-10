@@ -1,9 +1,12 @@
 
 const SocketMiddleware = require('../../../middlewares/socket');
+const provider = require('../../provider');
 
 jest.mock('../../../models');
 
-const db = require('../../../models');
+const mockDb = require('../../../models');
+
+const nextFunction = jest.fn();
 
 let mockSocketFactory = (authObject) => {
     return {
@@ -14,21 +17,11 @@ let mockSocketFactory = (authObject) => {
 };
 
 
-describe('Handle session', () => {
+describe('Handle session with id', () => {
 
-    let nextFunction;
-    
-    beforeAll(() => {
-
-        // await db.sequelize.sync({ force: true })
-        nextFunction = jest.fn();
-
-    })
-
-
-    it.only('Should call next method', async () => {
+    it('Should call next method', async () => {
         
-        db.User.findOne.mockImplementation(() => {
+        mockDb.User.findOne.mockImplementation(() => {
             return { id: 1, sessionId: '123456', username: 'Jdoe' }
         });
 
@@ -41,51 +34,45 @@ describe('Handle session', () => {
 
 });
 
-describe('Mise à jour de l\'enregistrementu du user', () => {
+describe('Handle session without id', () => {
+    
+    let originalDb;
 
     beforeAll(async () => {
+        originalDb = jest.requireActual('../../../models');
         // On initialise la bdd
-        await db.sequelize.sync({ match: /^test_/, force: true });
+        await originalDb.sequelize.sync({ match: /^test_/, force: true });
     });
 
     afterAll(async () => {
         // On vide la base de donnée
-        await db.sequelize.truncate();
+        await originalDb.sequelize.truncate();
     });
 
+    it.skip('Should update user record', async () => {
 
-    it('Should update user', async () => {
-        
         try {
             
-            // Création d'un utilisateur 
-            await db.User.create({username: 'Jdoe'});
-            
-            let mockSocket = mockSocketFactory({ username: 'Jdoe', sessionId: '123456' });
-            
+            const userFromProvider = provider.user.createSampleUser();
+
+            const createResult = await originalDb.User.create(userFromProvider);
+
+            let mockSocket = mockSocketFactory(userFromProvider);
+
             await SocketMiddleware.handleSession(mockSocket, nextFunction);
 
-            const {dataValues: userFind} = await db.User.findOne({where: {username: 'Jdoe'}});
+            const { dataValues: userFind } = await originalDb.User.findOne({ where: { username: userFromProvider.username } });
 
             expect(userFind.sessionId).not.toBeNull();
-
-
+            
         } catch (error) {
-            console.log(`Error ${error.message}`);
+            throw new Error(error.message);
         }
 
+    })
+
+    it.skip('Should not found user', () => {
+
     });
-
-    it('Should not found user', () => {
-
-    });
-
-});
-
-describe('Mise à jour de l\'objet socket', () => {
-    // socket = mockSocketFactory...
-    // const { Server } = require("socket.io");
-    // Création d'un mock de Server.use qui appel le middleware avec le mock de socket et de la fonction next()
-    // But est de vérifier les nouvelles propriétés sur l'objet socket
 
 });

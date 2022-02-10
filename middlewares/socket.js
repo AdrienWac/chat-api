@@ -15,10 +15,33 @@ exports.handleSession = async (socket, next) => {
 
     }
 
-    
+    if (socket.handshake.auth.username === null) {
+        return next(new Error(`Provide a username please`));
+    }
 
-    // Create Session
-        // sessionId/userId/username=...
-    // Set socket property
-        // socket.sessionId//socket.userId//socket.username = ...
+    try {
+        
+        const findUser = await db.User.findOne({ where: { username: socket.handshake.auth.username}});
+
+        findUser.sessionId = randomId();
+
+        await findUser.save();
+
+        ({username: socket.username, sessionId: socket.sessionId, id: socket.userId} = findUser.dataValues);
+
+        next();
+
+    } catch (error) {
+
+        return next(new Error(`Error occuring during the session generation.${error.message}`));
+
+
+    }
+}
+
+function randomId() {
+    const crypto = require('crypto');
+    return crypto.randomBytes(8).toString("hex");
+
+
 }
