@@ -18,7 +18,6 @@ services:
   adminer:
     depends_on:
       - mysql
-      - mysql-test
     image: adminer
     restart: always
     env_file: ./.env

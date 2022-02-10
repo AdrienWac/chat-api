@@ -26,7 +26,7 @@ describe('Handle session', () => {
     })
 
 
-    it('Should call next method', async () => {
+    it.only('Should call next method', async () => {
         
         db.User.findOne.mockImplementation(() => {
             return { id: 1, sessionId: '123456', username: 'Jdoe' }
@@ -39,21 +39,53 @@ describe('Handle session', () => {
         expect(nextFunction).toHaveBeenCalled();
     });
 
-    it('Should return an error', () => {
+});
 
+describe('Mise à jour de l\'enregistrementu du user', () => {
 
-        
-        // db.User.findOne.mockImplementation(() => {
-        //     return null;
-        // });
+    beforeAll(async () => {
+        // On initialise la bdd
+        await db.sequelize.sync({ match: /^test_/, force: true });
+    });
 
-        // let mockSocket = mockSocketFactory({ username: 'Jdoe', sessionId: '123456' });
-
-        // SocketMiddleware.handleSession(mockSocket, nextFunction);
-
-        // console.log('nextFunction.mock.calls[0][0]', nextFunction.mock.calls[0][0].constructor === Error);
-
+    afterAll(async () => {
+        // On vide la base de donnée
+        await db.sequelize.truncate();
     });
 
 
-})
+    it('Should update user', async () => {
+        
+        try {
+            
+            // Création d'un utilisateur 
+            await db.User.create({username: 'Jdoe'});
+            
+            let mockSocket = mockSocketFactory({ username: 'Jdoe', sessionId: '123456' });
+            
+            await SocketMiddleware.handleSession(mockSocket, nextFunction);
+
+            const {dataValues: userFind} = await db.User.findOne({where: {username: 'Jdoe'}});
+
+            expect(userFind.sessionId).not.toBeNull();
+
+
+        } catch (error) {
+            console.log(`Error ${error.message}`);
+        }
+
+    });
+
+    it('Should not found user', () => {
+
+    });
+
+});
+
+describe('Mise à jour de l\'objet socket', () => {
+    // socket = mockSocketFactory...
+    // const { Server } = require("socket.io");
+    // Création d'un mock de Server.use qui appel le middleware avec le mock de socket et de la fonction next()
+    // But est de vérifier les nouvelles propriétés sur l'objet socket
+
+});
