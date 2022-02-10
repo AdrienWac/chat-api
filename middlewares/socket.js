@@ -6,10 +6,16 @@ exports.handleSession = async (socket, next) => {
 
     if (sessionId) {
         
-        const session = await db.User.findOne({where: {sessionId: sessionId}});
+        const userFindBySession = await db.User.findOne({where: {sessionId: sessionId}});
         
-        if (session !== null) {
-            ({ sessionId: socket.sessionId, id: socket.userId, username: socket.username } = session);
+        if (userFindBySession !== null) {
+
+            userFindBySession.is_connected = true;
+            
+            await userFindBySession.save();
+
+            ({ sessionId: socket.sessionId, id: socket.userId, username: socket.username } = userFindBySession);
+
             return next();
         }
 
@@ -20,7 +26,7 @@ exports.handleSession = async (socket, next) => {
     }
 
     try {
-        
+
         const findUser = await db.User.findOne({ where: { username: socket.handshake.auth.username}});
 
         findUser.sessionId = randomId();
