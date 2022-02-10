@@ -35,7 +35,6 @@ exports.handleSession = async (socket, next) => {
 
         return next(new Error(`Error occuring during the session generation.${error.message}`));
 
-
     }
 }
 
