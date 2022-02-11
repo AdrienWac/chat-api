@@ -13,5 +13,14 @@ router.post(
     ]
 );
 
+router.post(
+    '/signin',
+    [
+        SanitizeMiddleware.sanitizeClientContent(['username']),
+        RegistrationMiddleware.signinRequestSchema,
+        UserController.login,
+    ]
+);
+
 
 module.exports = router;
