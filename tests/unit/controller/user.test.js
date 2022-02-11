@@ -109,3 +109,42 @@ describe('Test add user with same username', () => {
     });
 
 });
+
+describe('Test login user', () => {
+
+    beforeAll(async () => {
+        // On initialise la bdd
+        await db.sequelize.sync({ match: /^test_/, force: true });
+    });
+
+    afterEach(async () => {
+        // On vide la base de donnée
+        await db.sequelize.truncate();
+    });
+
+    it.only('Should pass', async () => {
+        
+        let user = provider.user.createSampleUser();
+
+        const req = mockRequest({username: user.username});
+        const res = mockResponse();
+
+        try {
+            
+            await db.User.create(user);
+
+            await UserController.login(req, res);
+
+            const firstArgSendFunctionCall = res.send.mock.calls[0][0];
+
+            expect(firstArgSendFunctionCall.code).toEqual(201);
+
+        } catch (error) {
+
+            throw new Error(error.message);
+
+        }
+
+    });
+
+});

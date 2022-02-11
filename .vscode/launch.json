@@ -14,7 +14,7 @@
             "program": "${workspaceRoot}/node_modules/.bin/jest",
             "cwd": "${workspaceRoot}",
             "args": [
-                "unit/middleware/socket.test",
+                "unit/controller/user.test",
                 "--watch",
                 "--config",
                 "jest.config.js"
