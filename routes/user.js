@@ -23,4 +23,12 @@ router.post(
 );
 
 
+router.post(
+    'signout',
+    [
+        UserController.logout,
+    ]
+);
+
+
 module.exports = router;
