@@ -48,7 +48,7 @@ exports.logout = async (req, res) => {
 
     try {
         
-        const findUser = await db.User.findOne({where: {id: req.body.userId}});
+        const findUser = await db.User.findOne({where: {id: req.body.id}});
 
         findUser.is_connected = false;
 

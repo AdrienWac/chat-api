@@ -24,7 +24,7 @@ router.post(
 
 
 router.post(
-    'signout',
+    '/signout',
     [
         UserController.logout,
     ]
