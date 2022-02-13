@@ -39,7 +39,8 @@ io.on('connection', async (socket) => {
 
     socket.on('signout', async () => {
 
-        io.to(socket.handshake.user.id).except(socket.id).emit('signout', socket.handshake.user);
+        // io.to(socket.handshake.user.id).except(socket.id).emit('signout', socket.handshake.user);
+        io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
 
         socket.broadcast.emit('user disconected', socket.handshake.user);
 
