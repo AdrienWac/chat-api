@@ -38,9 +38,30 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('signout', async () => {
-        // io.in(socket.handshake.user.id).disconnectSockets(true);
-        io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
-    })
+
+        io.to(socket.handshake.user.id).except(socket.id).emit('signout', socket.handshake.user);
+
+        socket.broadcast.emit('user disconected', socket.handshake.user);
+
+        try {
+
+            const findUser = await db.User.findOne({ where: { id: socket.handshake.user.id } });
+
+            if (findUser === null) {
+                throw new Error(`Error during disconnect. User is not found`);
+            }
+
+            findUser.is_connected = false;
+
+            await findUser.save();
+
+        } catch (error) {
+
+            console.log(`Error during disconnect. ${error.message}`);
+
+        }
+
+    });
 
     // J'emet un event lorsque je me déconnecte
     socket.on('disconnect', async () => {
