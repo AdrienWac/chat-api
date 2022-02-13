@@ -16,60 +16,44 @@ const io = new Server(httpServer, {
 io.use(SocketMiddleware.handleSession);
 
 io.on('connection', async (socket) => {
-    // Génère la liste des utilisateurs
-    let users = [];
-
-    let usersFindAll = await db.User.findAll();
-
-    users = usersFindAll.map((user) => {
-        return {
-            userId: user.userId,
-            username: user.username,
-            is_connected: user.is_connected,
-            messages: []
-        }
-    });
 
     // On rejoins ma room. Si d'autres onglet sont ouverts pour un même user, toutes les instances rejoindront la même room et pourront recevoir les messages
-    socket.join(socket.userId);
+    socket.join(socket.handshake.user.id);
+    
+    let usersFindAll = await db.User.findAll();
 
-    socket.emit('users', users);
-
-    // Emission des informations de session
-    socket.emit('session', {
-        sessionId: socket.sessionId,
-        userId: socket.userId
-    });
+    socket.emit('users', usersFindAll);
 
     // Emet un évènement de connexion aux autres connectés avec les informations de l'utilisateur
-    socket.broadcast.emit('user connected', {
-        userId: socket.userId,
-        username: socket.username,
-        messages: []
-    });
+    socket.broadcast.emit('user connected', socket.handshake.user);
 
     // Reception d'un événement message privé
     socket.on('private message', ({content, to}) => {
         // On créé un channel privé(to()) et on émet un évènement private message
-        socket.to(to).to(socket.userId).emit('private message', {
+        socket.to(to).to(socket.handshake.user.id).emit('private message', {
             content,
-            from: socket.id,
+            from: socket.handshake.user.id,
             to: to
         });
     });
 
+    socket.on('signout', async () => {
+        // io.in(socket.handshake.user.id).disconnectSockets(true);
+        io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
+    })
+
     // J'emet un event lorsque je me déconnecte
     socket.on('disconnect', async () => {
 
-        const matchingSockets = await io.in(socket.userId).allSockets();
+        const matchingSockets = await io.in(socket.handshake.user.id).allSockets();
 
         if (matchingSockets.size === 0) {
 
-            socket.broadcast.emit('user disconected', socket.userId);
+            socket.broadcast.emit('user disconected', socket.handshake.user);
 
             try {
 
-                const findUser = await db.User.findOne({ where: { id: socket.userId } });
+                const findUser = await db.User.findOne({ where: { id: socket.handshake.user.id } });
 
                 if (findUser === null) {
                     throw new Error(`Error during disconnect. User is not found`);

@@ -3,8 +3,10 @@ const db = require('../models');
 exports.add = async (req, res) => {
     
     try {
+
+        const user = db.User.build({ ...req.body, ...{ sessionId: randomId()}});
         
-        const user = await db.User.create(req.body);
+        await user.save();
         
         return res.status(201).send({ code: 201, message: `Account created successfully`, result: user.dataValues });
 
@@ -62,4 +64,9 @@ exports.logout = async (req, res) => {
 
     }
 
+}
+
+function randomId() {
+    const crypto = require('crypto');
+    return crypto.randomBytes(8).toString("hex");
 }
