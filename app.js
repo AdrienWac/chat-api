@@ -5,7 +5,7 @@ const db = require('./models');
 const cors =  require('cors');
 const config = require('./config');
 
-db.sequelize.sync({force: false});
+db.sequelize.sync({force: true});
 
 const app = express();
 
