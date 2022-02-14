@@ -9,8 +9,24 @@ router.post(
     [
         SanitizeMiddleware.sanitizeClientContent(['username']),
         RegistrationMiddleware.signupRequestSchema,
-        RegistrationMiddleware.isUniqueUser,
         UserController.add,
+    ]
+);
+
+router.post(
+    '/signin',
+    [
+        SanitizeMiddleware.sanitizeClientContent(['username']),
+        RegistrationMiddleware.signinRequestSchema,
+        UserController.login,
+    ]
+);
+
+
+router.post(
+    '/signout',
+    [
+        UserController.logout,
     ]
 );
 

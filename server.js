@@ -2,6 +2,8 @@ const app = require('./app');
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const config = require('./config');
+const SocketMiddleware = require('./middlewares/socket');
+const db = require('./models');
 
 const httpServer = createServer(app);
 
@@ -11,53 +13,86 @@ const io = new Server(httpServer, {
     }
 });
 
-io.use((socket, next) => {
-    const { username } = socket.handshake.auth;
+io.use(SocketMiddleware.handleSession);
 
-    if (!username) {
-        return new(new Error('Invalid username'));
-    }
+io.on('connection', async (socket) => {
 
-    socket.username = username;
-
-    next();
+    // On rejoins ma room. Si d'autres onglet sont ouverts pour un même user, toutes les instances rejoindront la même room et pourront recevoir les messages
+    socket.join(socket.handshake.user.id);
     
-});
+    let usersFindAll = await db.User.findAll();
 
-io.on('connection', (socket) => {
-    // Génère la liste des utilisateurs
-    const users = [];
-
-    for (let [id, socket] of io.of('/').sockets) {
-        users.push({
-            userId: id,
-            username: socket.username,
-            messages: []
-        });
-    }
-
-    socket.emit('users', users);
+    socket.emit('users', usersFindAll);
 
     // Emet un évènement de connexion aux autres connectés avec les informations de l'utilisateur
-    socket.broadcast.emit('user connected', {
-        userId: socket.id,
-        username: socket.username,
-        messages: []
-    });
+    socket.broadcast.emit('user connected', socket.handshake.user);
 
     // Reception d'un événement message privé
-    socket.on('private message', ({content, to}) => {
+    socket.on('private message', ({content, recipientUser}) => {
         // On créé un channel privé(to()) et on émet un évènement private message
-        socket.to(to).emit('private message', {
+        socket.to(recipientUser.id).to(socket.handshake.user.id).emit('private message', {
             content,
-            from: socket.id,
-            to: to
+            from: socket.handshake.user,
+            to: recipientUser
         });
+    });
+
+    socket.on('signout', async () => {
+
+        // io.to(socket.handshake.user.id).except(socket.id).emit('signout', socket.handshake.user);
+        io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
+
+        socket.broadcast.emit('user disconected', socket.handshake.user);
+
+        try {
+
+            const findUser = await db.User.findOne({ where: { id: socket.handshake.user.id } });
+
+            if (findUser === null) {
+                throw new Error(`Error during disconnect. User is not found`);
+            }
+
+            findUser.is_connected = false;
+
+            await findUser.save();
+
+        } catch (error) {
+
+            console.log(`Error during disconnect. ${error.message}`);
+
+        }
+
     });
 
     // J'emet un event lorsque je me déconnecte
-    socket.on('disconnect', () => {
-        socket.broadcast.emit('user disconected', socket.id);
+    socket.on('disconnect', async () => {
+
+        const matchingSockets = await io.in(socket.handshake.user.id).allSockets();
+
+        if (matchingSockets.size === 0) {
+
+            socket.broadcast.emit('user disconected', socket.handshake.user);
+
+            try {
+
+                const findUser = await db.User.findOne({ where: { id: socket.handshake.user.id } });
+
+                if (findUser === null) {
+                    throw new Error(`Error during disconnect. User is not found`);
+                }
+
+                findUser.is_connected = false;
+
+                await findUser.save();
+
+            } catch (error) {
+
+                console.log(`Error during disconnect. ${error.message}`);
+
+            }
+
+        }
+        
     });
 
 });

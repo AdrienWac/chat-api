@@ -2,6 +2,6 @@ exports.signupRequestSchema = (req, res, next) => {
     next();
 };
 
-exports.isUniqueUser = (req, res, next) => {
+exports.signinRequestSchema = (req, res, next) => {
     next();
-}
+};

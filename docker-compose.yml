@@ -14,7 +14,7 @@ services:
       MYSQL_DATABASE: chat
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
-  
+      
   adminer:
     depends_on:
       - mysql
@@ -46,3 +46,4 @@ services:
 
 volumes:
   mysql-datas:
+  mysql-test-datas:

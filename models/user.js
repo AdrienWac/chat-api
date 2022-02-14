@@ -17,7 +17,8 @@ module.exports = (sequelize, DataTypes) => {
 
     User.init({
         sessionId: { type: DataTypes.STRING, allowNull: true },
-        username: { type: DataTypes.STRING, allowNull: false },
+        username: { type: DataTypes.STRING, allowNull: false, unique: true },
+        is_connected: { type: DataTypes.BOOLEAN, defaultValue: true}
     }, {
         sequelize,
         modelName: 'User',

@@ -6,13 +6,18 @@
   "scripts": {
     "start": "DEBUG=socket* node server.js",
     "dev": "nodemon -L --inspect=0.0.0.0:9229",
-    "test": "./node_modules/.bin/jest --runInBand"
+    "test": "./node_modules/.bin/jest --runInBand",
+    "test:custom": "node --experimental-vm-modulesnode --experimental-vm-modules ./node_modules/.bin/jest unit/middleware/socket.test --detectOpenHandles"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AdrienWac/chat-api.git"
   },
-  "author": "",
+  "author": {
+    "name": "Adrien Lambert",
+    "email": "adrienlambert725@msn.com",
+    "url": "https://adrienlambert.com/"
+  },
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/AdrienWac/chat-api/issues"
@@ -28,6 +33,7 @@
   },
   "devDependencies": {
     "dotenv": "^14.3.2",
-    "jest": "^27.4.7"
+    "jest": "^27.4.7",
+    "node-fetch": "^3.2.0"
   }
 }
