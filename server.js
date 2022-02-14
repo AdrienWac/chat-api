@@ -28,12 +28,12 @@ io.on('connection', async (socket) => {
     socket.broadcast.emit('user connected', socket.handshake.user);
 
     // Reception d'un événement message privé
-    socket.on('private message', ({content, to}) => {
+    socket.on('private message', ({content, recipientUser}) => {
         // On créé un channel privé(to()) et on émet un évènement private message
-        socket.to(to).to(socket.handshake.user.id).emit('private message', {
+        socket.to(recipientUser.id).to(socket.handshake.user.id).emit('private message', {
             content,
-            from: socket.handshake.user.id,
-            to: to
+            from: socket.handshake.user,
+            to: recipientUser
         });
     });
 
