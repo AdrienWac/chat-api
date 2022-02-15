@@ -37,6 +37,17 @@ io.on('connection', async (socket) => {
         });
     });
 
+    socket.on('user typing', ({ content, userSender, userReceiver}) => {
+
+        if (content.length > 0) {
+            socket.to(userReceiver.id).emit('start typing', { user: userSender, state: true });
+        }
+
+        if (content.length == 0) {
+            socket.to(userReceiver.id).emit('end typing', { user: userSender, state: false });
+        }
+    });
+
     socket.on('signout', async () => {
 
         // io.to(socket.handshake.user.id).except(socket.id).emit('signout', socket.handshake.user);

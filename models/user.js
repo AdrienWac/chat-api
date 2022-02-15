@@ -18,7 +18,16 @@ module.exports = (sequelize, DataTypes) => {
     User.init({
         sessionId: { type: DataTypes.STRING, allowNull: true },
         username: { type: DataTypes.STRING, allowNull: false, unique: true },
-        is_connected: { type: DataTypes.BOOLEAN, defaultValue: true}
+        is_connected: { type: DataTypes.BOOLEAN, defaultValue: true},
+        is_typing: {
+            type: DataTypes.VIRTUAL,
+            get() {
+                return false;
+            },
+            set() {
+                throw new Error('Don\'t try to set `is_typing` value!');
+            }
+        }
     }, {
         sequelize,
         modelName: 'User',

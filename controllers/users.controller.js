@@ -8,7 +8,7 @@ exports.add = async (req, res) => {
         
         await user.save();
         
-        return res.status(201).send({ code: 201, message: `Account created successfully`, result: user.dataValues });
+        return res.status(201).send({ code: 201, message: `Account created successfully`, result: generateUser(user.dataValues) });
 
     } catch (error) {
 
@@ -36,7 +36,7 @@ exports.login = async (req, res) => {
 
         await user.save();
 
-        return res.status(201).send({ code: 201, message: `Login succesfully`, result: user.dataValues });
+        return res.status(201).send({ code: 201, message: `Login succesfully`, result: generateUser(user.dataValues) });
         
     } catch (error) {
 
@@ -69,4 +69,8 @@ exports.logout = async (req, res) => {
 function randomId() {
     const crypto = require('crypto');
     return crypto.randomBytes(8).toString("hex");
+}
+
+function generateUser(userData) {
+    return {...userData, ...{is_typing: false}};
 }
