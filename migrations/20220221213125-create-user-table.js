@@ -10,7 +10,10 @@ module.exports = {
      */
     await queryInterface.createTable('users', {
       id: {
-        type: Sequelize.DataTypes.INTEGER
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER(11)
       },
       sessionId: {
         type: Sequelize.DataTypes.INTEGER,

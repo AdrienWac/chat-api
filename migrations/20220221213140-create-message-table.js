@@ -11,7 +11,9 @@ module.exports = {
     // https://sequelize.org/master/class/src/dialects/abstract/query-interface.js~QueryInterface.html#instance-method-createDatabase
     await queryInterface.createTable('messages', {
       id: {
-        type: Sequelize.DataTypes.INTEGER
+        type: Sequelize.DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
       },
       content: {
         type: Sequelize.DataTypes.TEXT,
@@ -19,17 +21,17 @@ module.exports = {
         defaultValue: false
       },
       senderId: {
-        type: Sequelize.DataTypes.INTEGER,
+        type: Sequelize.INTEGER(11),
         references: {
-          model: { tableName: 'users', schema: 'schema' },
+          model: { tableName: 'users'},
           key: 'id'
         },
         allowNull: false
       },
       reveiverId: {
-        type: Sequelize.DataTypes.INTEGER,
+        type: Sequelize.INTEGER(11),
         references: {
-          model: { tableName: 'users', schema: 'schema' },
+          model: { tableName: 'users'},
           key: 'id'
         },
         allowNull: false
