@@ -30,5 +30,12 @@ router.post(
     ]
 );
 
+router.get(
+    '/:userId',
+    [
+        UserController.get
+    ]
+)
+
 
 module.exports = router;
