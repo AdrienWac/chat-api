@@ -66,6 +66,10 @@ exports.logout = async (req, res) => {
 
 }
 
+exports.get = async (req, res) => {
+    return res.status(201).send({code: 201, message: `Find user`, result: {}});
+}
+
 function randomId() {
     const crypto = require('crypto');
     return crypto.randomBytes(8).toString("hex");
