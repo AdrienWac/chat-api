@@ -67,7 +67,29 @@ exports.logout = async (req, res) => {
 }
 
 exports.get = async (req, res) => {
-    return res.status(201).send({code: 201, message: `Find user`, result: {}});
+    
+    let result = {code: 0, message: '', result: {}};
+
+    try {
+
+        const findUser = await db.User.findOune({ where: { id: req.params.userId }});
+        
+        if (findUser) {
+            (result = { code: 201, message: `User find successfully`, result: findUser.dataValues});
+        } else {
+            (result = { code: 404, message: `User not found`, result: {} });
+        }
+
+    } catch (error) {
+        
+        (result = {code: 500, message: `Unable to find the user. ${error.message}`, result: {}});
+        
+    } finally {
+
+        return res.status(result.code).send(result);
+
+    }
+
 }
 
 function randomId() {
