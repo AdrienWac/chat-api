@@ -14,7 +14,7 @@
             "program": "${workspaceRoot}/node_modules/.bin/jest",
             "cwd": "${workspaceRoot}",
             "args": [
-                "unit/controller/user.test",
+                "unit/models/message.test",
                 "--watch",
                 "--config",
                 "jest.config.js"

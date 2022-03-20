@@ -35,6 +35,10 @@ io.on('connection', async (socket) => {
             from: socket.handshake.user,
             to: recipientUser
         });
+
+        
+
+
     });
 
     socket.on('user typing', ({ content, userSender, userReceiver}) => {
