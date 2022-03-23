@@ -1,6 +1,9 @@
 'use strict';
 const { Model } = require('sequelize');
-const User = require('./user');
+const db = require('./index');
+const sequelize = require('./instance');
+const Sequelize = require('sequelize');
+const User = require('./user')(sequelize, Sequelize.DataTypes);
 
 module.exports = (sequelize, DataTypes) => {
 
@@ -11,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            this.belongsTo(models['User'], { as: 'Sender', foreignKey: 'sender_id'});
-            this.belongsTo(models['User'], { as: 'Receiver', foreignKey: 'receiver_id'});
+            this.belongsTo(models['User'], { as: 'Sender', foreignKey: 'sender_id', constraints: false});
+            this.belongsTo(models['User'], { as: 'Receiver', foreignKey: 'receiver_id', constraints: false});
         }
 
     };
@@ -23,9 +26,8 @@ module.exports = (sequelize, DataTypes) => {
         created: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
         updated: { type: DataTypes.DATE, allowNull: true},
         // TODO Écrire une validation pour vérifier que les valeurs est bien un identifiant existant
-        // TODO remettr les references à la table User
-        sender_id: { type: DataTypes.INTEGER,  },
-        receiver_id: { type: DataTypes.INTEGER,  },
+        senderId: { type: DataTypes.INTEGER},
+        receiverId: { type: DataTypes.INTEGER},
     }, {
         sequelize,
         modelName: 'Message',
