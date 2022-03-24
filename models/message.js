@@ -26,9 +26,18 @@ module.exports = (sequelize, DataTypes) => {
         created: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
         updated: { type: DataTypes.DATE, allowNull: true},
         // TODO Écrire une validation pour vérifier que les valeurs est bien un identifiant existant
-        sender_id: { type: DataTypes.INTEGER},
-        receiver_id: { type: DataTypes.INTEGER},
+        sender_id: { type: DataTypes.INTEGER, allowNull: false},
+        receiver_id: { type: DataTypes.INTEGER, allowNull: false},
     }, {
+        hooks: {
+            afterValidate: async (message, options) => {
+                const sender = await User.findOne({ where: { id: message.sender_id } });
+                const receiver = await User.findOne({where: {id: message.sender_id} });
+                if (sender === null || receiver === null) {
+                    throw new Error('Impossible de créer le message, utilisateur manquant');
+                }
+            }
+        },
         sequelize,
         modelName: 'Message',
         tableName: 'messages',
@@ -39,4 +48,4 @@ module.exports = (sequelize, DataTypes) => {
 
     return Message;
 
-};
+}; 
