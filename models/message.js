@@ -26,8 +26,8 @@ module.exports = (sequelize, DataTypes) => {
         created: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
         updated: { type: DataTypes.DATE, allowNull: true},
         // TODO Écrire une validation pour vérifier que les valeurs est bien un identifiant existant
-        senderId: { type: DataTypes.INTEGER},
-        receiverId: { type: DataTypes.INTEGER},
+        sender_id: { type: DataTypes.INTEGER},
+        receiver_id: { type: DataTypes.INTEGER},
     }, {
         sequelize,
         modelName: 'Message',
