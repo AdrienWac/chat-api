@@ -15,6 +15,7 @@
             "cwd": "${workspaceRoot}",
             "args": [
                 "unit/models/message.test",
+                "--detectOpenHandles",
                 "--watch",
                 "--config",
                 "jest.config.js"
