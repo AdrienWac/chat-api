@@ -8,7 +8,7 @@
     "dev": "nodemon -L --inspect=0.0.0.0:9229",
     "test": "./node_modules/.bin/jest --runInBand",
     "test:custom": "node --experimetal-vm-modulesnode --experimental-vm-modules ./node_modules/.bin/jest unit/middleware/socket.test --detectOpenHandles",
-    "migration": "npx sequelize db:migrate"
+    "migration": "npx sequelize db:migrate --config './config/config.js'"
   },
   "repository": {
     "type": "git",
