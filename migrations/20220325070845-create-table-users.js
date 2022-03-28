@@ -1,12 +1,14 @@
 'use strict';
 
+const path = require('path');
+
 module.exports = {
   async up (queryInterface, Sequelize) {
     const t = await queryInterface.sequelize.transaction();
 
     try {
 
-      await queryInterface.dropAllTables({transaction: t});
+      await queryInterface.dropAllTables({ transaction: t, skip: ['SequelizeMeta']});
 
       await queryInterface.createTable('users', 
         {
@@ -28,6 +30,15 @@ module.exports = {
             type: Sequelize.DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: true
+          },
+          created: {
+            type: Sequelize.DataTypes.DATE,
+            defaultValue: Sequelize.NOW,
+            allowNull: false
+          },
+          updated: {
+            type: Sequelize.DataTypes.DATE,
+            allowNull: true
           }
         },
         {transaction: t}
@@ -38,6 +49,7 @@ module.exports = {
     } catch (error) {
 
       await t.rollback();
+      throw new Error(`Impossible de lancer la migration ${path.basename(__filename)}. ${error.message}`);
 
     }
   },
