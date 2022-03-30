@@ -66,6 +66,27 @@ exports.logout = async (req, res) => {
 
 }
 
+exports.find = async (req, res) => {
+
+    try {
+
+        const findUser = await db.User.findOne({ where: { id: req.params.idUser } });
+
+        if (findUser === null) {
+            res.status(404).send({ code: 404, message: `User not found`, result: null});
+        }
+
+        return res.status(201).send({ code: 201, message: `User found`, result: findUser.dataValues });
+
+    } catch (error) {
+
+        return res.status(500).send({ code: 500, message: `Impossible to found user. ${error.message}`, result: {} });
+
+    }
+
+
+}
+
 function randomId() {
     const crypto = require('crypto');
     return crypto.randomBytes(8).toString("hex");

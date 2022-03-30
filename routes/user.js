@@ -30,5 +30,13 @@ router.post(
     ]
 );
 
+// TODO faire regex sur le params idUser
+router.get(
+    '/:idUser',
+    [
+        UserController.find
+    ]
+)
+
 
 module.exports = router;
