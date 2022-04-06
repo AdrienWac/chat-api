@@ -17,6 +17,10 @@ io.use(SocketMiddleware.handleSession);
 
 io.on('connection', async (socket) => {
 
+    exports.getSocket = () => {
+        return socket;
+    }
+
     // On rejoins ma room. Si d'autres onglet sont ouverts pour un même user, toutes les instances rejoindront la même room et pourront recevoir les messages
     socket.join(socket.handshake.user.id);
     
@@ -46,32 +50,14 @@ io.on('connection', async (socket) => {
         if (content.length == 0) {
             socket.to(userReceiver.id).emit('end typing', { user: userSender, state: false });
         }
+
     });
 
     socket.on('signout', async () => {
 
-        // io.to(socket.handshake.user.id).except(socket.id).emit('signout', socket.handshake.user);
-        io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
+        // io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
 
-        socket.broadcast.emit('user disconected', socket.handshake.user);
-
-        try {
-
-            const findUser = await db.User.findOne({ where: { id: socket.handshake.user.id } });
-
-            if (findUser === null) {
-                throw new Error(`Error during disconnect. User is not found`);
-            }
-
-            findUser.is_connected = false;
-
-            await findUser.save();
-
-        } catch (error) {
-
-            console.log(`Error during disconnect. ${error.message}`);
-
-        }
+        console.log('EMIT SIGNOUT EVENT FROM BRO');
 
     });
 
@@ -82,30 +68,40 @@ io.on('connection', async (socket) => {
 
         if (matchingSockets.size === 0) {
 
-            socket.broadcast.emit('user disconected', socket.handshake.user);
-
-            try {
-
-                const findUser = await db.User.findOne({ where: { id: socket.handshake.user.id } });
-
-                if (findUser === null) {
-                    throw new Error(`Error during disconnect. User is not found`);
-                }
-
-                findUser.is_connected = false;
-
-                await findUser.save();
-
-            } catch (error) {
-
-                console.log(`Error during disconnect. ${error.message}`);
-
-            }
-
+            console.log('DISCONNECTED WITHOUT BRO');
+            notifyOtherSocket({ socket, eventName: 'user disconected', params: socket.handshake.user});
+            //     socket.broadcast.emit('user disconected', socket.handshake.user);
+            
         }
         
     });
 
+    
+
 });
 
 httpServer.listen(config.PORT);
+
+const notifyOtherSocket = ({ socket, eventName, params }) => {
+    console.log('NOTIFIY OTHER SOCKET');
+    // socket.broadcast.emit(eventName, params);
+};
+
+const notifyBro = ({io, socket, user}) => {
+    console.log('EMIT SIGNOUT EVENT TO ALL BRO');
+    // io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
+}
+
+const hasBro = async (userId, io) => {
+    const matchingSockets = await io.in(userId).allSockets();
+    console.log('matchingSockets size', matchingSockets);
+    return matchingSockets.size > 1;
+};
+
+exports.notifyOtherSocket = notifyOtherSocket;
+exports.notifyBro = notifyBro;
+exports.hasBro = hasBro;
+exports.getIo = () => {
+    return io;
+};
+
