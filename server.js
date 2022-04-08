@@ -64,13 +64,14 @@ io.on('connection', async (socket) => {
     // J'emet un event lorsque je me déconnecte
     socket.on('disconnect', async () => {
 
-        const matchingSockets = await io.in(socket.handshake.user.id).allSockets();
+        const getBroOfSocket = await getBro(socket.handshake.user.id, io);
 
-        if (matchingSockets.size === 0) {
+        if (getBroOfSocket.size === 0) {
 
-            console.log('DISCONNECTED WITHOUT BRO');
-            notifyOtherSocket({ socket, eventName: 'user disconected', params: socket.handshake.user});
-            //     socket.broadcast.emit('user disconected', socket.handshake.user);
+            console.log('SOCKET IS DISCONNECTED WITHOUT BRO', socket.handshake.user.id);
+            notifyOtherSocket({ socket, eventName: 'user disconected', params: socket.handshake.user });
+            const UserController = require('./controllers/users.controller');
+            await UserController.setUserConnectedState(socket.handshake.user.id);
             
         }
         
@@ -83,20 +84,25 @@ io.on('connection', async (socket) => {
 httpServer.listen(config.PORT);
 
 const notifyOtherSocket = ({ socket, eventName, params }) => {
-    console.log('NOTIFIY OTHER SOCKET');
-    // socket.broadcast.emit(eventName, params);
+    console.log(`EMIT ${eventName} EVENT TO OTHER SOCKET`);
+    socket.broadcast.emit(eventName, params);
 };
 
-const notifyBro = ({io, socket, user}) => {
-    console.log('EMIT SIGNOUT EVENT TO ALL BRO');
-    // io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
+const notifyBro = ({io, socket, eventName, params}) => {
+    console.log(`EMIT ${eventName} EVENT TO ALL BRO`);
+    io.to(socket.handshake.user.id).emit(eventName, params);
 }
 
 const hasBro = async (userId, io) => {
     const matchingSockets = await io.in(userId).allSockets();
-    console.log('matchingSockets size', matchingSockets);
+    console.log('HAS BRO ? ', matchingSockets.size > 1);
     return matchingSockets.size > 1;
 };
+
+const getBro = async (userId, io) => {
+    const matchingSockets = await io.in(userId).allSockets();
+    return matchingSockets;
+}
 
 exports.notifyOtherSocket = notifyOtherSocket;
 exports.notifyBro = notifyBro;

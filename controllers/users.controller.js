@@ -49,25 +49,41 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
 
-    
-    const io = server.getIo();
+    try {
 
-    const hasBro = await server.hasBro(req.body.id, io);
-    
-    console.log('POST LOGOUT', req.body.id, hasBro);
-    
-    return setUserConnectedState(req.body.id)
-        .then(user => {
-            if (hasBro) {
-                server.notifyBro();
-            }
-            // const socket = server.getSocket();
-            // server.notifyOtherSocket({socket, eventName: 'user disconected', params: user});
-            return res.status(201).send({ code: 201, message: `Logout succesfully`, result: user });
-        })
-        .catch(error => {
-            return res.status(500).send({ code: 500, message: `Error during user logout. ${error.message}`, result: {} });
-        });
+        const io = server.getIo();
+
+        // const hasBro = await server.hasBro(req.body.id, io);
+
+        console.log('POST LOGOUT', req.body.id);
+
+        // const user = await setUserConnectedState(req.body.id);
+        const user = {
+            "id": 5,
+            "sessionId": "695f1db9d802fce9",
+            "username": "player1",
+            "is_connected": true,
+            "is_typing": false,
+            "created": "2022-03-28T20:26:34.000Z",
+            "updated": "2022-03-28T20:26:34.000Z"
+        };
+
+        const socket = server.getSocket();
+
+        // if (hasBro) {
+        //     server.notifyBro({io, socket, eventName: 'signout', params: socket.handshake.user});
+        // }
+
+        server.notifyOtherSocket({ socket, eventName: 'user disconected', params: user });
+
+        return res.status(201).send({ code: 201, message: `Logout succesfully`, result: user });
+
+    } catch (error) {
+
+        return res.status(500).send({ code: 500, message: `Error during user logout. ${error.message}`, result: {} });
+
+    }
+
 
     return res.status(201).send({
         code: 201, 
@@ -82,22 +98,6 @@ exports.logout = async (req, res) => {
             "updated": "2022-03-28T20:26:34.000Z"
         }
     });
-
-    // try {
-        
-    //     const findUser = await db.User.findOne({where: {id: req.body.id}});
-
-    //     findUser.is_connected = false;
-
-    //     await findUser.save();
-
-    //     return res.status(201).send({ code: 201, message: `Logout succesfully`, result: findUser.dataValues });
-
-    // } catch (error) {
-
-    //     return res.status(500).send({ code: 500, message: `Error during user logout. ${error.message}`, result: {} });
-
-    // }
 
 }
 
@@ -131,7 +131,7 @@ function generateUser(userData) {
     return {...userData, ...{is_typing: false}};
 }
 
-async function setUserConnectedState(userId) {
+const setUserConnectedState = async (userId) => {
     
     const findUser = await db.User.findOne({ where: { id: userId } });
     
@@ -145,4 +145,7 @@ async function setUserConnectedState(userId) {
             throw new Error(error.message)}
         );
 
-}
+};
+
+exports.setUserConnectedState = setUserConnectedState;
+
