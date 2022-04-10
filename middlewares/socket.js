@@ -10,10 +10,6 @@ exports.handleSession = async (socket, next) => {
         
         if (userFindBySession !== null) {
 
-            userFindBySession.is_connected = true;
-            
-            await userFindBySession.save();
-
             socket.handshake.user = userFindBySession.dataValues;
 
             return next();

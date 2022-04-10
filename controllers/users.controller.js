@@ -22,7 +22,7 @@ exports.add = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-
+    
     try {
         
         const findAllUserByUsername = await db.User.findAll({where: {username: req.body.username}});
@@ -48,33 +48,27 @@ exports.login = async (req, res) => {
 }
 
 exports.logout = async (req, res) => {
-
     try {
 
         const io = server.getIo();
 
-        // const hasBro = await server.hasBro(req.body.id, io);
+        const hasBro = await server.hasBro(req.body.id, io);
 
-        console.log('POST LOGOUT', req.body.id);
+        const user = await setUserConnectedState(req.body.id);
 
-        // const user = await setUserConnectedState(req.body.id);
-        const user = {
-            "id": 5,
-            "sessionId": "695f1db9d802fce9",
-            "username": "player1",
-            "is_connected": true,
-            "is_typing": false,
-            "created": "2022-03-28T20:26:34.000Z",
-            "updated": "2022-03-28T20:26:34.000Z"
-        };
+        const sockets = server.getSocket(user.id);
 
-        const socket = server.getSocket();
+        if (hasBro) {
+            server.notifyBro({ 
+                io, 
+                allSockets: sockets, 
+                currentSocket: sockets[req.body.socketId], 
+                eventName: 'signout', 
+                params: user
+            });
+        }
 
-        // if (hasBro) {
-        //     server.notifyBro({io, socket, eventName: 'signout', params: socket.handshake.user});
-        // }
-
-        server.notifyOtherSocket({ socket, eventName: 'user disconected', params: user });
+        server.notifyOtherSocket({ socket: sockets[req.body.socketId], eventName: 'user disconected', params: user });
 
         return res.status(201).send({ code: 201, message: `Logout succesfully`, result: user });
 

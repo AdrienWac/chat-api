@@ -13,13 +13,13 @@ const io = new Server(httpServer, {
     }
 });
 
+let socketsByUserId = {};
+
 io.use(SocketMiddleware.handleSession);
 
 io.on('connection', async (socket) => {
 
-    exports.getSocket = () => {
-        return socket;
-    }
+    socketsByUserId[socket.handshake.user.id] = { ...socketsByUserId[socket.handshake.user.id], ...{[socket.id]: socket}};
 
     // On rejoins ma room. Si d'autres onglet sont ouverts pour un même user, toutes les instances rejoindront la même room et pourront recevoir les messages
     socket.join(socket.handshake.user.id);
@@ -53,26 +53,15 @@ io.on('connection', async (socket) => {
 
     });
 
-    socket.on('signout', async () => {
-
-        // io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
-
-        console.log('EMIT SIGNOUT EVENT FROM BRO');
-
-    });
-
     // J'emet un event lorsque je me déconnecte
     socket.on('disconnect', async () => {
 
         const getBroOfSocket = await getBro(socket.handshake.user.id, io);
 
         if (getBroOfSocket.size === 0) {
-
-            console.log('SOCKET IS DISCONNECTED WITHOUT BRO', socket.handshake.user.id);
             notifyOtherSocket({ socket, eventName: 'user disconected', params: socket.handshake.user });
             const UserController = require('./controllers/users.controller');
             await UserController.setUserConnectedState(socket.handshake.user.id);
-            
         }
         
     });
@@ -84,18 +73,27 @@ io.on('connection', async (socket) => {
 httpServer.listen(config.PORT);
 
 const notifyOtherSocket = ({ socket, eventName, params }) => {
-    console.log(`EMIT ${eventName} EVENT TO OTHER SOCKET`);
-    socket.broadcast.emit(eventName, params);
+    socket.broadcast.except(socket.handshake.user.id).emit(eventName, params);
 };
 
-const notifyBro = ({io, socket, eventName, params}) => {
-    console.log(`EMIT ${eventName} EVENT TO ALL BRO`);
-    io.to(socket.handshake.user.id).emit(eventName, params);
+const notifyBro = ({io, allSockets, currentSocket, eventName, params}) => {
+
+    Object.getOwnPropertyNames(allSockets).forEach(socketId => {
+
+        if (socketId !== currentSocket.id) {
+            console.log('NOTIFY BRO CURRENT SOCKET', currentSocket.id);
+            console.log('NOTIFY BRO ELEMENT', socketId);
+            // socket.to(socket.handshake.user.id).except(socket.id).emit(eventName, params);
+            io.to(socketId).emit(eventName, params);
+        }
+
+    });
+    
+    
 }
 
 const hasBro = async (userId, io) => {
     const matchingSockets = await io.in(userId).allSockets();
-    console.log('HAS BRO ? ', matchingSockets.size > 1);
     return matchingSockets.size > 1;
 };
 
@@ -107,6 +105,18 @@ const getBro = async (userId, io) => {
 exports.notifyOtherSocket = notifyOtherSocket;
 exports.notifyBro = notifyBro;
 exports.hasBro = hasBro;
+exports.getSocket = (userId = null, socketId = null) => {
+
+    if (userId && socketId) {
+        return socketsByUserId[userId][socketId];
+    }
+
+    if (userId) {
+        return socketsByUserId[userId];
+    }
+
+    return socketsByUserId;
+}
 exports.getIo = () => {
     return io;
 };
