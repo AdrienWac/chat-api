@@ -13,9 +13,13 @@ const io = new Server(httpServer, {
     }
 });
 
+let socketsByUserId = {};
+
 io.use(SocketMiddleware.handleSession);
 
 io.on('connection', async (socket) => {
+
+    socketsByUserId[socket.handshake.user.id] = { ...socketsByUserId[socket.handshake.user.id], ...{[socket.id]: socket}};
 
     // On rejoins ma room. Si d'autres onglet sont ouverts pour un même user, toutes les instances rejoindront la même room et pourront recevoir les messages
     socket.join(socket.handshake.user.id);
@@ -46,66 +50,74 @@ io.on('connection', async (socket) => {
         if (content.length == 0) {
             socket.to(userReceiver.id).emit('end typing', { user: userSender, state: false });
         }
-    });
-
-    socket.on('signout', async () => {
-
-        // io.to(socket.handshake.user.id).except(socket.id).emit('signout', socket.handshake.user);
-        io.to(socket.handshake.user.id).emit('signout', socket.handshake.user);
-
-        socket.broadcast.emit('user disconected', socket.handshake.user);
-
-        try {
-
-            const findUser = await db.User.findOne({ where: { id: socket.handshake.user.id } });
-
-            if (findUser === null) {
-                throw new Error(`Error during disconnect. User is not found`);
-            }
-
-            findUser.is_connected = false;
-
-            await findUser.save();
-
-        } catch (error) {
-
-            console.log(`Error during disconnect. ${error.message}`);
-
-        }
 
     });
 
     // J'emet un event lorsque je me déconnecte
     socket.on('disconnect', async () => {
 
-        const matchingSockets = await io.in(socket.handshake.user.id).allSockets();
+        const getBroOfSocket = await getBro(socket.handshake.user.id, io);
 
-        if (matchingSockets.size === 0) {
-
-            socket.broadcast.emit('user disconected', socket.handshake.user);
-
-            try {
-
-                const findUser = await db.User.findOne({ where: { id: socket.handshake.user.id } });
-
-                if (findUser === null) {
-                    throw new Error(`Error during disconnect. User is not found`);
-                }
-
-                findUser.is_connected = false;
-
-                await findUser.save();
-
-            } catch (error) {
-
-                console.log(`Error during disconnect. ${error.message}`);
-
-            }
-
+        if (getBroOfSocket.size === 0) {
+            notifyOtherSocket({ socket, eventName: 'user disconected', params: socket.handshake.user });
+            const UserController = require('./controllers/users.controller');
+            await UserController.setUserConnectedState(socket.handshake.user.id);
         }
         
     });
 
+    
+
 });
 
 httpServer.listen(config.PORT);
+
+const notifyOtherSocket = ({ socket, eventName, params }) => {
+    socket.broadcast.except(socket.handshake.user.id).emit(eventName, params);
+};
+
+const notifyBro = ({io, allSockets, currentSocket, eventName, params}) => {
+
+    Object.getOwnPropertyNames(allSockets).forEach(socketId => {
+
+        if (socketId !== currentSocket.id) {
+            console.log('NOTIFY BRO CURRENT SOCKET', currentSocket.id);
+            console.log('NOTIFY BRO ELEMENT', socketId);
+            // socket.to(socket.handshake.user.id).except(socket.id).emit(eventName, params);
+            io.to(socketId).emit(eventName, params);
+        }
+
+    });
+    
+    
+}
+
+const hasBro = async (userId, io) => {
+    const matchingSockets = await io.in(userId).allSockets();
+    return matchingSockets.size > 1;
+};
+
+const getBro = async (userId, io) => {
+    const matchingSockets = await io.in(userId).allSockets();
+    return matchingSockets;
+}
+
+exports.notifyOtherSocket = notifyOtherSocket;
+exports.notifyBro = notifyBro;
+exports.hasBro = hasBro;
+exports.getSocket = (userId = null, socketId = null) => {
+
+    if (userId && socketId) {
+        return socketsByUserId[userId][socketId];
+    }
+
+    if (userId) {
+        return socketsByUserId[userId];
+    }
+
+    return socketsByUserId;
+}
+exports.getIo = () => {
+    return io;
+};
+

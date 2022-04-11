@@ -1,4 +1,5 @@
 const db = require('../models');
+const server = require('../server');
 
 exports.add = async (req, res) => {
     
@@ -21,7 +22,7 @@ exports.add = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-
+    
     try {
         
         const findAllUserByUsername = await db.User.findAll({where: {username: req.body.username}});
@@ -47,22 +48,50 @@ exports.login = async (req, res) => {
 }
 
 exports.logout = async (req, res) => {
-
     try {
-        
-        const findUser = await db.User.findOne({where: {id: req.body.id}});
 
-        findUser.is_connected = false;
+        const io = server.getIo();
 
-        await findUser.save();
+        const hasBro = await server.hasBro(req.body.id, io);
 
-        return res.status(201).send({ code: 201, message: `Logout succesfully`, result: findUser.dataValues });
+        const user = await setUserConnectedState(req.body.id);
+
+        const sockets = server.getSocket(user.id);
+
+        if (hasBro) {
+            server.notifyBro({ 
+                io, 
+                allSockets: sockets, 
+                currentSocket: sockets[req.body.socketId], 
+                eventName: 'signout', 
+                params: user
+            });
+        }
+
+        server.notifyOtherSocket({ socket: sockets[req.body.socketId], eventName: 'user disconected', params: user });
+
+        return res.status(201).send({ code: 201, message: `Logout succesfully`, result: user });
 
     } catch (error) {
 
         return res.status(500).send({ code: 500, message: `Error during user logout. ${error.message}`, result: {} });
 
     }
+
+
+    return res.status(201).send({
+        code: 201, 
+        message: `Logout succesfully`, 
+        result: {
+            "id": 1,
+            "sessionId": "695f1db9d802fce9",
+            "username": "player1",
+            "is_connected": true,
+            "is_typing": false,
+            "created": "2022-03-28T20:26:34.000Z",
+            "updated": "2022-03-28T20:26:34.000Z"
+        }
+    });
 
 }
 
@@ -95,3 +124,22 @@ function randomId() {
 function generateUser(userData) {
     return {...userData, ...{is_typing: false}};
 }
+
+const setUserConnectedState = async (userId) => {
+    
+    const findUser = await db.User.findOne({ where: { id: userId } });
+    
+    findUser.is_connected = false;
+    
+    return findUser.save()
+        .then(result => {
+            return findUser.dataValues;
+        })
+        .catch(error => {
+            throw new Error(error.message)}
+        );
+
+};
+
+exports.setUserConnectedState = setUserConnectedState;
+
