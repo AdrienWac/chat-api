@@ -125,11 +125,11 @@ function generateUser(userData) {
     return {...userData, ...{is_typing: false}};
 }
 
-const setUserConnectedState = async (userId) => {
+const setUserConnectedState = async (userId, connectedState = false) => {
     
     const findUser = await db.User.findOne({ where: { id: userId } });
     
-    findUser.is_connected = false;
+    findUser.is_connected = connectedState;
     
     return findUser.save()
         .then(result => {

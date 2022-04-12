@@ -4,6 +4,8 @@ const { Server } = require("socket.io");
 const config = require('./config');
 const SocketMiddleware = require('./middlewares/socket');
 const db = require('./models');
+const userEntity = require('./entities/user');
+const UserController = require('./controllers/users.controller');
 
 const httpServer = createServer(app);
 
@@ -24,9 +26,16 @@ io.on('connection', async (socket) => {
     // On rejoins ma room. Si d'autres onglet sont ouverts pour un même user, toutes les instances rejoindront la même room et pourront recevoir les messages
     socket.join(socket.handshake.user.id);
     
-    let usersFindAll = await db.User.findAll();
-
-    socket.emit('users', usersFindAll);
+    // Mise à jour de l'état de connexion en base
+    UserController.setUserConnectedState(socket.handshake.user.id, true)
+        .then(user => {
+            // Ensuite je peux générer et envoyer la liste des utilisateurs connectés (avec moi dedans)
+            userEntity.getListOfConnectedUser(socket.handshake.user).then(allConnectedUsers => {
+                console.log('J\'envoie la liste des utilisateurs', allConnectedUsers);
+                socket.emit('users', allConnectedUsers);
+            });
+        });
+ 
 
     // Emet un évènement de connexion aux autres connectés avec les informations de l'utilisateur
     socket.broadcast.emit('user connected', socket.handshake.user);
@@ -60,8 +69,7 @@ io.on('connection', async (socket) => {
 
         if (getBroOfSocket.size === 0) {
             notifyOtherSocket({ socket, eventName: 'user disconected', params: socket.handshake.user });
-            const UserController = require('./controllers/users.controller');
-            await UserController.setUserConnectedState(socket.handshake.user.id);
+            await UserController.setUserConnectedState(socket.handshake.user.id, false);
         }
         
     });
