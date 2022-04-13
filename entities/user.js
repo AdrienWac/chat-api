@@ -10,6 +10,8 @@ exports.getListOfConnectedUser = async (currentUser, sort = false) => {
 
     const allUsersConnected = getAllUsersConnected.map((element) => {
         element.dataValues.self = element.dataValues.id === currentUser.id;
+        element.dataValues.hasNewMessages = 0;
+        element.dataValues.messages = [];
         return element.dataValues;
     });
 

@@ -32,7 +32,7 @@ io.on('connection', async (socket) => {
             // Ensuite je peux générer et envoyer la liste des utilisateurs connectés (avec moi dedans)
             userEntity.getListOfConnectedUser(socket.handshake.user).then(allConnectedUsers => {
                 console.log('J\'envoie la liste des utilisateurs', allConnectedUsers);
-                socket.emit('users', allConnectedUsers);
+                io.emit('users', allConnectedUsers);
             });
         });
  
