@@ -9,34 +9,9 @@ router.post(
     [
         SanitizeMiddleware.sanitizeClientContent(['username']),
         RegistrationMiddleware.signupRequestSchema,
-        UserController.add,
+        UserController.create,
     ]
 );
-
-router.post(
-    '/signin',
-    [
-        SanitizeMiddleware.sanitizeClientContent(['username']),
-        RegistrationMiddleware.signinRequestSchema,
-        UserController.login,
-    ]
-);
-
-
-router.post(
-    '/signout',
-    [
-        UserController.logout,
-    ]
-);
-
-// TODO faire regex sur le params idUser
-router.get(
-    '/:idUser',
-    [
-        UserController.find
-    ]
-)
 
 
 module.exports = router;
