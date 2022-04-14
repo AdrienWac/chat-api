@@ -69,6 +69,12 @@ exports.logout = async (req, res) => {
         }
 
         server.notifyOtherSocket({ socket: sockets[req.body.socketId], eventName: 'user disconected', params: user });
+        
+        if (Object.getOwnPropertyNames(sockets).length > 0) {
+            for (const socketId in sockets) {
+                sockets[socketId].disconnect();
+            }
+        }
 
         return res.status(201).send({ code: 201, message: `Logout succesfully`, result: user });
 
