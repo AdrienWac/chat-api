@@ -134,16 +134,33 @@ function generateUser(userData) {
 const setUserConnectedState = async (userId, connectedState = false) => {
     
     const findUser = await db.User.findOne({ where: { id: userId } });
-    
+
     findUser.is_connected = connectedState;
-    
+
     return findUser.save()
         .then(result => {
             return findUser.dataValues;
         })
         .catch(error => {
-            throw new Error(error.message)}
-        );
+            throw new Error(error.message)
+        });
+
+
+    // try {
+    
+    //     const findUser = await db.User.findOne({ where: { id: userId } });
+
+    //     findUser.is_connected = connectedState;
+
+    //     await findUser.save();
+        
+    //     return findUser.dataValues;
+
+    // } catch (error) {
+
+    //     throw new Error(error.message);
+
+    // }
 
 };
 

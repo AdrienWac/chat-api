@@ -68,8 +68,12 @@ io.on('connection', async (socket) => {
         const getBroOfSocket = await getBro(socket.handshake.user.id, io);
 
         if (getBroOfSocket.size === 0) {
+            // TODO Comment faire pour que le client vide sa session ? 
+            // Si on emit un event il sera pris en compte par le client ? ou trop tard car onglet fermé ?
+            // Sinon il ne faut pas déconnecter le user pour pas que son username puisse être utilisée.
             notifyOtherSocket({ socket, eventName: 'user disconected', params: socket.handshake.user });
             await UserController.setUserConnectedState(socket.handshake.user.id, false);
+            
         }
         
     });
