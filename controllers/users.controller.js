@@ -1,5 +1,6 @@
 const db = require('../models');
 const server = require('../server');
+const userEntity = require('../entities/user');
 
 exports.add = async (req, res) => {
     
@@ -69,6 +70,11 @@ exports.logout = async (req, res) => {
         }
 
         server.notifyOtherSocket({ socket: sockets[req.body.socketId], eventName: 'user disconected', params: user });
+
+        userEntity.getListOfConnectedUser(sockets[req.body.socketId].handshake.user).then(allConnectedUsers => {
+            console.log('J\'envoie la liste des utilisateurs', allConnectedUsers);
+            io.emit('users', allConnectedUsers);
+        });
         
         if (Object.getOwnPropertyNames(sockets).length > 0) {
             for (const socketId in sockets) {
@@ -145,22 +151,6 @@ const setUserConnectedState = async (userId, connectedState = false) => {
             throw new Error(error.message)
         });
 
-
-    // try {
-    
-    //     const findUser = await db.User.findOne({ where: { id: userId } });
-
-    //     findUser.is_connected = connectedState;
-
-    //     await findUser.save();
-        
-    //     return findUser.dataValues;
-
-    // } catch (error) {
-
-    //     throw new Error(error.message);
-
-    // }
 
 };
 
