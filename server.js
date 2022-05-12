@@ -41,13 +41,16 @@ io.on('connection', async (socket) => {
     socket.broadcast.emit('user connected', socket.handshake.user);
 
     // Reception d'un événement message privé
-    socket.on('private message', ({content, recipientUser}) => {
+    socket.on('private message', ({content, recipientUser, date}) => {
+        
         // On créé un channel privé(to()) et on émet un évènement private message
         socket.to(recipientUser.id).to(socket.handshake.user.id).emit('private message', {
             content,
             from: socket.handshake.user,
-            to: recipientUser
+            to: recipientUser,
+            date
         });
+
     });
 
     socket.on('user typing', ({ content, userSender, userReceiver}) => {
